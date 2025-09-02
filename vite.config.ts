@@ -6,4 +6,8 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    host: '0.0.0.0', // écoute toutes les interfaces
+    port: 8080,       // le port attendu par Fly.io
+  },
 })
