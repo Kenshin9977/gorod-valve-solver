@@ -118,9 +118,9 @@ export default function App() {
 
   return (
     <body className="bg-gray-900 m-0">
-    <div className="h-screen bg-gray-900 text-white flex flex-col items-center p-4">
+    <div className="h-screen bg-gray-900 text-white flex flex-col items-center">
       {/* Carte (occupe l’espace restant au-dessus du texte) */}
-      <div className="relative flex-grow flex justify-center items-center min-h-0">
+      <div className="relative w-full max-w-[400px]">
         <img
           src={mapImg}
           alt="map"
