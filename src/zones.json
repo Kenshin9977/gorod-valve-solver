@@ -1,8 +1,0 @@
-[
-  { "name": "Departement Store", "x": 50, "y": 200 },
-  { "name": "Infirmary", "x": 400, "y": 50 },
-  { "name": "Tank Station", "x": 750, "y": 200 },
-  { "name": "Supply Drop", "x": 500, "y": 250 },
-  { "name": "Dragon Command", "x": 300, "y": 200 },
-  { "name": "Armory", "x": 400, "y": 350 }
-]

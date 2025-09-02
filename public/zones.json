@@ -1,0 +1,8 @@
+[
+  { "name": "Tank Station", "x": "2%", "y": "59%" },
+  { "name": "Departement Store", "x": "31%", "y": "60%" },
+  { "name": "Infirmary", "x": "37%", "y": "49%" },
+  { "name": "Armory", "x": "53%", "y": "36%" },
+  { "name": "Supply Drop", "x": "70%", "y": "47%" },
+  { "name": "Dragon Command", "x": "50%", "y": "10%" }
+]

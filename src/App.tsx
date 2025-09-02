@@ -1,10 +1,8 @@
-import { useState } from "react";
-import mapImg from "./assets/map.png";
+import { useState, useEffect } from "react";
+import mapImg from "./assets/map.jpg";
 import valveImg from "./assets/valve.png";
 import greenLightImg from "./assets/green_light.png";
 import cryptexImg from "./assets/cryptex.webp";
-import zonesData from "./zones.json";
-
 
 // Graphe des connexions (inchangé)
 const graph = {
@@ -42,13 +40,13 @@ const graph = {
 
 // Recherche de chemin hamiltonien (inchangé)
 function findHamiltonianPath(graph, start, end, visited = new Set()) {
-  if (visited.size === Object.keys(graph).length && start === end) return [end];
+  if (visited.size === Object.keys(graph).length && start === end) return [{ zone: end, number: null }];
   visited.add(start);
 
   for (const { to, number } of graph[start]) {
     if (!visited.has(to) || to === end) {
       const path = findHamiltonianPath(graph, to, end, new Set(visited));
-      if (path) return [{ zone: start, number }, ...path];
+        if (path) return [{ zone: start, number }, ...path];
     }
   }
   return null;
@@ -60,6 +58,14 @@ export default function App() {
   const [clicks, setClicks] = useState<{ [key: string]: number }>({});
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; zone: string } | null>(null);
 
+  const [zonesData, setZonesData] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/zones.json")
+      .then((res) => res.json())
+      .then((data) => setZonesData(data));
+  }, []);
+
   const handleClick = (zone: string, e: React.MouseEvent) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, zone });
@@ -70,16 +76,18 @@ export default function App() {
 
     if (type === "start") {
       Object.keys(newClicks).forEach((z) => { if (newClicks[z] === 1) newClicks[z] = 0; });
+      if (zone === end) setEnd(null);
       newClicks[zone] = 1;
       setStart(zone);
     }
 
     if (type === "end") {
       Object.keys(newClicks).forEach((z) => { if (newClicks[z] === 2) newClicks[z] = 0; });
-      if (zone !== start) {
-        newClicks[zone] = 2;
-        setEnd(zone);
-      }
+
+      if (zone === start) setStart(null);
+
+      newClicks[zone] = 2;
+      setEnd(zone);
     }
 
     if (type === "reset") {
@@ -95,10 +103,15 @@ export default function App() {
   const path = start && end ? findHamiltonianPath(graph, start, end) : null;
 
   return (
-    <div className="flex flex-col items-center p-4 relative">
-      {/* Carte */}
-      <div className="relative">
-        <img src={mapImg} alt="map" className="w-[800px]" />
+    <body className="bg-gray-900 m-0">
+    <div className="h-screen bg-gray-900 text-white flex flex-col items-center p-4">
+      {/* Carte (occupe l’espace restant au-dessus du texte) */}
+      <div className="relative flex-grow flex justify-center items-center min-h-0">
+        <img
+          src={mapImg}
+          alt="map"
+          className="w-full max-w-[400px] max-h-full object-contain"
+        />
         {zonesData.map((z) => {
           const isStart = clicks[z.name] === 1;
           const isEnd = clicks[z.name] === 2;
@@ -110,29 +123,30 @@ export default function App() {
               onClick={(e) => handleClick(z.name, e)}
               className="absolute rounded-full border-4"
               style={{
-                top: z.y,
-                left: z.x,
-                borderColor: isStart ? "lightgreen" : isEnd ? "violet" : "gray",
+                top: `${z.y}`,
+                left: `${z.x}`,
+                borderColor: isStart ? "#4ade80" : isEnd ? "#a78bfa" : "gray",
+                width: "11%",
+                height: "auto",
               }}
             >
-              {/* Numéro si start ou milieu de path, pas sur end */}
               {pathItem && !isEnd && (
                 <span
-                  className="absolute -top-4 left-1 text-2xl font-bold text-white"
-                  style={{ WebkitTextStroke: "1px black" }}
+                  className="absolute -top-1 left-1 font-bold text-white"
+                  style={{
+                    fontSize: '150%', // 40% de la largeur du bouton parent
+                    WebkitTextStroke: "1px black",
+                  }}
                 >
                   {pathItem.number}
                 </span>
               )}
-
-              {/* Icône */}
-              <img src={valveImg} alt="valve" className="w-12 h-12" />
-
+              <img src={valveImg} alt="valve" className="w-full h-auto object-contain" />
               {isEnd && (
                 <img
                   src={cryptexImg}
                   alt="cryptex"
-                  className="absolute top-0 left-0 w-12 h-12 pointer-events-none"
+                  className="absolute top-0 left-0 w-full h-auto pointer-events-none object-contain"
                 />
               )}
             </button>
@@ -140,16 +154,21 @@ export default function App() {
         })}
       </div>
 
-      {/* Résultat texte */}
-      {path && (
-        <div className="mt-4 text-white text-center">
-          {path.map((p, i) => (
-            <div key={i}>
-              {i + 1}. {p.zone} : {p.number ?? "-"}
-            </div>
-          ))}
+      {/* Résultat texte (réserve toujours de la place fixe) */}
+      <div className="mt-2 flex justify-center w-full h-[11rem] shrink-0">
+        <div className="text-left leading-relaxed w-full max-w-[512px]">
+          {path ? (
+            path.map((p, i) => (
+              <div key={i}>
+                {i + 1}. {p.zone}
+                {i !== path.length - 1 ? ` : ${p.number ?? "-"}` : ""}
+              </div>
+            ))
+          ) : (
+            Array.from({ length: 7 }).map((_, i) => <div key={i}>&nbsp;</div>)
+          )}
         </div>
-      )}
+      </div>
 
       {/* Menu contextuel */}
       {contextMenu && (
@@ -167,5 +186,6 @@ export default function App() {
         </div>
       )}
     </div>
+    </body>
   );
 }
