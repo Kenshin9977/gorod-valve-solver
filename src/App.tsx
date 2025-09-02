@@ -38,8 +38,16 @@ const graph = {
   ],
 };
 
+type Graph = Record<string, { to: string; number: number }[]>;
+
+type PathItem = { zone: string; number: number | null };
 // Recherche de chemin hamiltonien (inchangé)
-function findHamiltonianPath(graph, start, end, visited = new Set()) {
+function findHamiltonianPath(
+  graph: Graph,
+  start: string,
+  end: string,
+  visited: Set<string> = new Set()
+): PathItem[] | null {
   if (visited.size === Object.keys(graph).length && start === end) return [{ zone: end, number: null }];
   visited.add(start);
 
@@ -58,7 +66,13 @@ export default function App() {
   const [clicks, setClicks] = useState<{ [key: string]: number }>({});
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; zone: string } | null>(null);
 
-  const [zonesData, setZonesData] = useState<any[]>([]);
+  type Zone = {
+  name: string;
+  x: number; // position en %
+  y: number; // position en %
+};
+
+  const [zonesData, setZonesData] = useState<Zone[]>([]);
 
   useEffect(() => {
     fetch("/zones.json")
@@ -100,7 +114,7 @@ export default function App() {
     setContextMenu(null);
   };
 
-  const path = start && end ? findHamiltonianPath(graph, start, end) : null;
+  const path: PathItem[] | null = start && end ? findHamiltonianPath(graph, start, end) : null;
 
   return (
     <body className="bg-gray-900 m-0">
@@ -158,7 +172,7 @@ export default function App() {
       <div className="mt-2 flex justify-center w-full h-[11rem] shrink-0">
         <div className="text-left leading-relaxed w-full max-w-[512px]">
           {path ? (
-            path.map((p, i) => (
+            path?.map((p: PathItem, i: number) => (
               <div key={i}>
                 {i + 1}. {p.zone}
                 {i !== path.length - 1 ? ` : ${p.number ?? "-"}` : ""}
